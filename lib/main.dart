@@ -1,6 +1,6 @@
+import 'package:chatbot/home_page.dart';
 import 'package:flutter/material.dart';
 
-import 'dialog_flow.dart';
 
 void main() => runApp(MyApp());
 
@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: "Flutter Chatbot",
       debugShowCheckedModeBanner: false,
-      home: FlutterFactsChatBots(),
+      home: HomePage(),
     );
   }
 }
