@@ -1,12 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class Facts extends StatelessWidget {
-  Facts({this.text, this.name, this.type, this.dataFile});
+  Facts({this.text, this.name, this.type, this.dataFile, this.file});
 
   final dynamic text;
   final String name;
   final bool type;
   final bool dataFile;
+  final File file;
 
   List<Widget> botMessage(context) {
     return <Widget>[
@@ -48,7 +51,9 @@ class Facts extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
             Container(
+              width: 100,
               child: Card(
+                elevation: 5,
                 color: Color(0xffff7f50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.all(
@@ -73,9 +78,12 @@ class Facts extends StatelessWidget {
                       ),
                       Text(
                         text,
-                        style:
-                            TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                      )
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ],
                   ),
                 ),
@@ -116,7 +124,6 @@ class Facts extends StatelessWidget {
                   padding: EdgeInsets.all(13.0),
                   child: Text(
                     text,
-                    style: TextStyle(color: Colors.white),
                   )),
             )
           ],

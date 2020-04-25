@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 import 'facts_message.dart';
 import 'package:flutter_dialogflow/dialogflow_v2.dart';
 import 'package:file_picker/file_picker.dart';
@@ -18,8 +19,10 @@ class FlutterFactsChatBots extends StatefulWidget {
 class _FlutterFactsChatBotsState extends State<FlutterFactsChatBots> {
   final List<Facts> messageList = <Facts>[];
   final TextEditingController _textChat = new TextEditingController();
+  bool isPlay = false;
   File dataFile;
   String fileName = "";
+  VideoPlayerController _controller;
 
   Widget _queryInputWidget(BuildContext context) {
     return Row(
@@ -73,18 +76,22 @@ class _FlutterFactsChatBotsState extends State<FlutterFactsChatBots> {
           ),
         ),
         Container(
-          width: MediaQuery.of(context).size.width * 0.1,
-          height: MediaQuery.of(context).size.width * 0.1,
-          decoration:
-              BoxDecoration(color: Color(0xffff7f50), shape: BoxShape.circle),
-          child: IconButton(
+            width: MediaQuery.of(context).size.width * 0.1,
+            height: MediaQuery.of(context).size.width * 0.1,
+            decoration:
+                BoxDecoration(color: Color(0xffff7f50), shape: BoxShape.circle),
+            child: IconButton(
               icon: Icon(
                 Icons.send,
                 color: Colors.white,
                 size: 20,
               ),
-              onPressed: () => _submitQuery(_textChat.text)),
-        ),
+              onPressed: () {
+                if (_textChat.text.isNotEmpty) {
+                  _submitQuery(_textChat.text);
+                }
+              },
+            )),
       ],
     );
   }
@@ -110,12 +117,29 @@ class _FlutterFactsChatBotsState extends State<FlutterFactsChatBots> {
 
   void _submitQuery(dynamic text) {
     _textChat.clear();
-    Facts message = new Facts(
-      text: fileName != "" ? fileName : text,
-      name: "User",
-      type: true,
-      dataFile: fileName != "" ? true : false,
-    );
+    Facts message;
+    if (fileName != "") {
+      GestureDetector(
+          onTap: () {
+            print("object");
+            videoPlayer();
+            isPlay = true;
+            setState(() {});
+          },
+          child: message = new Facts(
+            text: fileName,
+            name: "User",
+            type: true,
+            dataFile: true,
+          ));
+    } else {
+      message = new Facts(
+        text: text,
+        name: "User",
+        type: true,
+        dataFile: false,
+      );
+    }
     setState(() {
       messageList.insert(0, message);
       fileName = "";
@@ -125,10 +149,31 @@ class _FlutterFactsChatBotsState extends State<FlutterFactsChatBots> {
 
   showFilePicker(FileType fileType) async {
     dataFile =
-        await FilePicker.getFile(type: fileType, allowedExtensions: ['pdf']);
+        await FilePicker.getFile(type: fileType, allowedExtensions: ['mp4']);
     fileName += path.basename(dataFile.path);
+    _controller = VideoPlayerController.file(dataFile)
+      ..initialize().then((_) {
+        setState(() {});
+      });
     _submitQuery(fileType.toString());
     Navigator.pop(context);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
+
+  Widget videoPlayer() {
+    return Center(
+      child: _controller.value.initialized
+          ? AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            )
+          : Container(),
+    );
   }
 
   @override
@@ -144,6 +189,23 @@ class _FlutterFactsChatBotsState extends State<FlutterFactsChatBots> {
         ),
         backgroundColor: Color(0xffff7f50),
       ),
+      floatingActionButton: isPlay
+          ? Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 10, 50),
+              child: FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    _controller.value.isPlaying
+                        ? _controller.pause()
+                        : _controller.play();
+                  });
+                },
+                child: Icon(_controller.value.isPlaying
+                    ? Icons.pause
+                    : Icons.play_arrow),
+              ),
+            )
+          : Container(),
       body: Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
